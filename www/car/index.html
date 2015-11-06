@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><title>Wifi RC Car</title>
+	<!-- http://dhtmlx.com/docs/products/dhtmlxSlider -->
+	<link rel="stylesheet" type="text/css" href="codebase/dhtmlxslider.css"/>
+	<script src="codebase/dhtmlxslider.js"></script>
+	<script>
+		var mySlider;
+		function doOnLoad(){
+			mySlider = new dhtmlXSlider({
+				parent: "sliderObj",
+				size: 200,
+				value: 20,
+				step: 10,
+				min: 0,
+				max: 100,
+				vertical: true,
+				tooltip: true,
+				inverse:  true
+			});		
+
+			//mySlider.attachEvent("onChange", function(value){
+			//	slider_event({
+			//		eventNme: "onChange",
+			//		arg: [value]
+			//	});
+			//});
+			
+			mySlider.attachEvent("onSlideEnd", function(value){
+				slider_event({
+					eventNme: "onSlideEnd",
+					arg: [value]
+				});
+			});
+		};		
+		
+		function doOnUnload(){
+			if (mySlider != null){
+				mySlider.unload();
+				mySlider = null;
+			}
+		};
+
+		function slider_event(data) {
+			changeSpeed(data.arg.join(", "));
+		};
+	</script>
+
+   	<script src="car.js"></script>
+  
+	<!-- external CSS file -->
+   	<link rel="stylesheet" type="text/css" href="car.css"></head>
+
+	
+<body onkeydown="keyDown(event)" onKeyUp="keyUp(event)" onload="doOnLoad();" onunload="doOnUnload();" style="background-color: black;">
+
+
+<!-- show video from camera -->
+<table id="tableVideo">
+<td>
+	<img style="border: 0px solid ; width: 320px; height: 240px;" src="http://192.168.8.1:8080/?action=stream">
+</td></table>
+
+
+<table id="table1">
+<tr>
+	<td><div class="img"><a target="_parent">
+		<img src="images/camera.png" onmousedown="camera()" alt="Camera">
+	</a></div></td>
+
+	<td><div class="img"><a target="_parent">
+		<img src="images/forward.png" onmousedown="runCmd(8)" onmouseup="runCmd(5)" alt="Forward">
+	</a></div></td>
+
+	<td><div class="img"><a target="_parent">
+		<img src="images/light.png" onmousedown="headLight()" alt="Light">
+	</a></div></td>
+</tr>
+
+<tr>
+	<td><div class="img"><a target="_parent">
+		<img src="images/left.png" onmousedown="runCmd(4)" onmouseup="runCmd(5)" alt="Left">
+	</a></div></td>
+
+	<td><div class="img"><a target="_parent">
+		<img src="images/stop.png" onmousedown="runCmd(5)" onmouseup="runCmd(5) alt="Stop">
+	</a></div></td>
+
+	<td><div class="img"><a target="_parent">
+		<img src="images/right.png" onmousedown="runCmd(6)" onmouseup="runCmd(5)" alt="Right">
+	</a></div></td>
+</tr>
+
+<tr>
+	<td><div class="img"><a target="_parent">
+		<img src="images/horn.png" onmousedown="horn()" alt="Horn">
+	</a></div></td>
+
+	<td><div class="img"><a target="_parent">
+		<img src="images/backward.png" onmousedown="runCmd(2)" onmouseup="runCmd(5)" alt="Backward">
+	</a></div></td>
+
+	<td><div class="img"><a target="_parent">
+		<img src="images/mic.png" onmousedown="mic()" alt="Mic">
+	</a></div></td>
+</tr>
+</table>
+
+
+<!-- show speed trackbar -->
+<div class="speedTrackbar"> 
+	<div id="sliderObj"></div>
+</div>
+
+
+<!-- the value of result is returned from runCmd function (it is Ajax function) -->
+<table id="tableResult" class="inlineTable">
+	<td><p class="padding"> Command: <span id="result"></span></p></td> 
+</table>
+
+</body></html>

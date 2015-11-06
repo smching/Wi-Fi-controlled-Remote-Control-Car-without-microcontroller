@@ -1,0 +1,114 @@
+#!/usr/bin/lua
+require "gpio"	-- GPIO read/write functions
+require "2w_motor"
+
+--uncomment following lines and change the GPIOs value to suit yourself
+--Motor[1].pinA = 22 --use GPIO 22
+--Motor[1].pinB = 21 --use GPIO 21
+--Motor[2].pinB = 19 --use GPIO 19
+--Motor[2].pinA = 18 --use GPIO 18
+
+local str= os.getenv("QUERY_STRING")  	-- query string from URL
+str=string.gsub(str,"&"," ") 		--replace "&" with space
+str= string.upper(str)			-- convert to upper case
+
+
+function browser_mode()
+	local cmd= string.sub(str,1,3) 	-- first 3 characters
+	local parameter= string.sub(str,5) -- from character 5 until the end
+	value=tonumber(parameter)		-- convert from string to integer
+
+	 --e.g. http://192.168.8.1/cgi-bin/control?RUN=8
+	if cmd=="RUN" then
+		car_run(value)
+	end
+
+	--e.g. http://192.168.8.1/cgi-bin/control?LED=20
+	if cmd=="LED" then
+		local headlight_pin=value
+		
+		--when pinMode is executed, it always reset headlight_pin to 0
+		--we don't want this to be happen since we only needs to execute pinMode once
+		if pin_direction_status(headlight_pin)~="o" then	--if headlight_pin is not configure as output
+			pinMode(headlight_pin, OUTPUT) 		--configure headlight_pin as output
+		end
+
+		--toggle LED
+		if digitalRead(headlight_pin)==1 then
+			digitalWrite(headlight_pin, 0)
+		else
+			digitalWrite(headlight_pin, 1)
+		end
+	end	
+
+	 --e.g. http://192.168.8.1/cgi-bin/control?CAM
+	if cmd=="CAM" then
+		local state = read_data_from_program(cmd)
+		if webcam_status()==1 then 
+			os.execute("/etc/init.d/mjpg-streamer stop")
+		else
+			os.execute("/etc/init.d/mjpg-streamer start")
+		end
+	end
+end
+
+
+--http://www.plastibots.com/index.php/2013/11/26/wifi-bot-control-android-app-wifibot
+--http://192.168.8.1/cgi-bin/control?URLmode=2&URLxval=&URLyval=&URLudlr=U&URLcmdVal=
+function application_mode()
+	parameter=string.match(col[4],"=.")
+	parameter=string.match(parameter,"%u")
+	if parameter=="U" then
+		car_run(FORWARD)
+	elseif parameter=="D" then
+		car_run(BACKWARD)
+	elseif parameter=="S" then
+		car_run(STOP)
+	elseif parameter=="L" then
+		car_run(FORWARD_LEFT)
+	elseif parameter=="R" then
+		car_run(FORWARD_RIGHT)
+	end
+end
+
+
+--Starts program in a separated process and returns a file handle 
+--that you can use to read data from this program
+function read_data_from_program(cmd)
+   file=io.popen(cmd)
+   result= file:read("*all")
+   file:close()
+   return result
+end
+
+
+--check webcam status
+-- return 0 if webcam is disabled, otherwise return 1
+--require to install lsof on router
+function webcam_status()
+	local cmd="lsof /dev/video0 | grep mjpg"
+	local state=read_data_from_program(cmd)
+  	if state == '' then
+		return 0
+	else
+		return 1
+	end
+end
+
+
+col = {}
+for word in str:gmatch("%S+") do
+  	table.insert(col, word)
+end
+
+if string.sub(str,1,3)=="URL" then
+	local mode=string.match(col[1],"%d")
+	if mode=="1" then
+		joystick_mode()
+	elseif mode=="2" then
+		application_mode()
+	end
+else
+	browser_mode()
+end
+	

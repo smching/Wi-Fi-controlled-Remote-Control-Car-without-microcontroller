@@ -1,0 +1,46 @@
+div.img
+{
+  margin: 0 10px 10px 0;  /* top bottom right left */
+  float: left;
+  height:auto;
+}	
+
+div.img a:hover img
+{
+  border:3px solid blue;  
+  /* create round corner for image */
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -khtml-border-radius: 10px;
+  border-radius: 10px;
+}
+  
+.clearboth { clear: both; } /* force new line */
+
+p
+{
+  margin: 10 10px 10px 0;  /* top bottom right left */
+  color:white;
+  //background-color:yellow;
+}
+
+p.padding
+{
+  //border-style: ridge;
+  color:red;
+  border: 1px solid;
+  padding-top:0px;
+  padding-bottom:0px;
+  padding-right:0px;
+  padding-left:0px;
+  width:280px;
+  text-align: center;
+}
+
+div.speedTrackbar
+{
+  margin: -230 10px 10px 280;  /* top bottom right left */
+  float: left;
+  height:auto;
+}
+
